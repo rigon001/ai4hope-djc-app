@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Research Assistant</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f6f6f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 40px;
+        }
+        h1 {
+            color: #444;
+        }
+        form {
+            width: 100%;
+            max-width: 600px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            font-size: 18px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        /* Default select styling — can be reused or customized for narrow ones */
+        select {
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            background-color: #4285f4;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .result, .sources {
+            margin-top: 30px;
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .source-item {
+            margin-bottom: 15px;
+        }
+        #nextBtn, #answerRatingWrapper {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Research Assistant</h1>
+    
+    <!-- Progress Tracker -->
+    <div id="progressTracker" style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; max-width: 600px; width: 100%; text-align: center;">
+        <strong>Progress:</strong> <span id="progressText">0/10</span> queries completed
+    </div>
+    
+    <!-- Language Selection  (temporary here, should be removed in next Phase)--> 
+    <div style="margin-bottom: 20px; max-width: 600px; width: 100%;">
+        <label for="languageSelect"><strong>Preferred Language:</strong></label>
+        <select id="languageSelect" style="width: 200px; margin-left: 10px;">
+            <option value="en">English</option>
+            <option value="de">German</option>
+            <option value="sl">Slovenian</option>
+            <option value="es">Spanish</option>
+            <option value="pt">Portuguese</option>
+        </select>
+    </div>
+    <!-- End Language Selection and Temporary-->
+    
+    <form id="queryForm">
+        <input type="text" id="queryInput" placeholder="Ask something about dementia..." required>
+        <button type="submit">Search</button>
+        <div id="answerStyleGroup" style="margin-top: 20px; display: none;">
+            <label><strong>Select answer style:</strong></label><br>
+            <label><input type="radio" name="answerStyle" value="Patient" checked> Patient</label><br>
+            <label><input type="radio" name="answerStyle" value="Family caregiver"> Family caregiver</label><br>
+            <label><input type="radio" name="answerStyle" value="Professional caregiver"> Professional Caregiver</label>
+        </div>
+    </form>
+
+    <div id="results" class="result" style="display:none;">
+        <h3>Answer</h3>
+        <p id="answerText"></p>
+    </div>
+    <div id="answerRatingWrapper"></div>
+
+
+    <div id="sources" class="sources" style="display:none;">
+        <h3>Sources</h3>
+        <div id="sourcesList"></div>
+    </div>
+
+    <!-- Completion Page -->
+    <div id="completionPage" style="display:none; text-align: center; margin-top: 50px;">
+        <h2 style="color: green;">✅ Congratulations!</h2>
+        <p style="font-size: 18px; margin: 20px 0;">You have completed all 10 queries!</p>
+        <p style="font-size: 16px; margin-bottom: 30px;">Before finishing, please complete the System Usability Scale below:</p>
+        
+        <!-- System Usability Scale -->
+        <div id="susQuestionnaire" style="max-width: 700px; margin: 0 auto; text-align: left; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h3 style="text-align: center; margin-bottom: 20px;">System Usability Scale</h3>
+            <p style="text-align: center; font-size: 14px; color: #666; margin-bottom: 30px;">Please rate your agreement with each statement (1 = Strongly Disagree, 5 = Strongly Agree)</p>
+            
+            <div id="susQuestions"></div>
+            
+            <button id="finishBtnCompletion" disabled style="padding: 15px 40px; font-size: 18px; background-color: #cccccc; color: white; border: none; border-radius: 8px; cursor: not-allowed; margin-top: 30px; width: 100%;">
+                Complete all questions to finish
+            </button>
+        </div>
+    </div>
+
+    <div id="buttonGroup" style="margin-top: 20px;">
+        <button id="nextBtn">Next Question</button>
+    </div>
+
+
+    <script>
+        const userId = "{{ user_id }}";
+        const userRole = "{{ role }}";
+        const isProfessionalCaregiver = userRole === "Professional caregiver";
+        const form = document.getElementById("queryForm");
+        const input = document.getElementById("queryInput");
+        const answerRatingWrapper = document.getElementById("answerRatingWrapper");
+        const answerText = document.getElementById("answerText");
+        const sourcesList = document.getElementById("sourcesList");
+        const resultsBox = document.getElementById("results");
+        const sourcesBox = document.getElementById("sources");
+        const progressText = document.getElementById("progressText");
+        let receivedFirstChunk = false;
+        let queriesCompleted = 0;
+
+        // System Usability Scale questions
+        const susQuestions = [
+            "I think that I would like to use this system frequently",
+            "I found the system unnecessarily complex",
+            "I thought the system was easy to use",
+            "I think that I would need the support of a technical person to be able to use this system",
+            "I found the various functions in this system were well integrated",
+            "I thought there was too much inconsistency in this system",
+            "I would imagine that most people would learn to use this system very quickly",
+            "I found the system very cumbersome to use",
+            "I felt very confident using the system",
+            "I needed to learn a lot of things before I could get going with this system"
+        ];
+        
+        const susResponses = {};
+        
+        // Initialize SUS questionnaire
+        function initializeSUS() {
+            const container = document.getElementById("susQuestions");
+            container.innerHTML = "";
+            
+            susQuestions.forEach((question, index) => {
+                const questionNum = index + 1;
+                const questionDiv = document.createElement("div");
+                questionDiv.style.marginBottom = "25px";
+                questionDiv.style.padding = "15px";
+                questionDiv.style.backgroundColor = "#f9f9f9";
+                questionDiv.style.borderRadius = "6px";
+                
+                const questionText = document.createElement("p");
+                questionText.style.fontWeight = "bold";
+                questionText.style.marginBottom = "10px";
+                questionText.textContent = `${questionNum}. ${question}`;
+                questionDiv.appendChild(questionText);
+                
+                const radioContainer = document.createElement("div");
+                radioContainer.style.display = "flex";
+                radioContainer.style.justifyContent = "space-between";
+                radioContainer.style.alignItems = "center";
+                radioContainer.style.marginTop = "10px";
+                
+                const labels = ["Strongly Disagree", "", "", "", "Strongly Agree"];
+                
+                for (let i = 1; i <= 5; i++) {
+                    const label = document.createElement("label");
+                    label.style.display = "flex";
+                    label.style.flexDirection = "column";
+                    label.style.alignItems = "center";
+                    label.style.cursor = "pointer";
+                    label.style.flex = "1";
+                    
+                    const radio = document.createElement("input");
+                    radio.type = "radio";
+                    radio.name = `sus_q${questionNum}`;
+                    radio.value = i;
+                    radio.style.marginBottom = "5px";
+                    radio.style.cursor = "pointer";
+                    radio.style.transform = "scale(1.3)";
+                    
+                    radio.addEventListener("change", () => {
+                        susResponses[`q${questionNum}`] = parseInt(i);
+                        checkSUSComplete();
+                    });
+                    
+                    const labelText = document.createElement("span");
+                    labelText.style.fontSize = "12px";
+                    labelText.style.textAlign = "center";
+                    labelText.textContent = i === 1 ? labels[0] : (i === 5 ? labels[4] : i);
+                    
+                    label.appendChild(radio);
+                    label.appendChild(labelText);
+                    radioContainer.appendChild(label);
+                }
+                
+                questionDiv.appendChild(radioContainer);
+                container.appendChild(questionDiv);
+            });
+        }
+        
+        // Check if all SUS questions are answered
+        function checkSUSComplete() {
+            const allAnswered = Object.keys(susResponses).length === 10;
+            const finishBtn = document.getElementById("finishBtnCompletion");
+            
+            if (allAnswered) {
+                finishBtn.disabled = false;
+                finishBtn.style.backgroundColor = "#28a745";
+                finishBtn.style.cursor = "pointer";
+                finishBtn.textContent = "Finish";
+            } else {
+                finishBtn.disabled = true;
+                finishBtn.style.backgroundColor = "#cccccc";
+                finishBtn.style.cursor = "not-allowed";
+                finishBtn.textContent = `Complete all questions to finish (${Object.keys(susResponses).length}/10)`;
+            }
+        }
+
+        // Load current progress on page load
+        async function loadProgress() {
+            try {
+                const response = await fetch(`/get_query_count?user_id=${userId}`);
+                const data = await response.json();
+                queriesCompleted = data.queries_completed || 0;
+                updateProgress();
+            } catch (error) {
+                console.log("Could not load progress");
+            }
+        }
+
+        function updateProgress() {
+            const progressTracker = document.getElementById('progressTracker');
+            if (queriesCompleted >= 10) {
+                progressText.innerText = `10/10`;
+                progressTracker.innerHTML = `Progress: <strong>Question <span id="progressText">10/10</span></strong>`;
+            } else {
+                progressText.innerText = `${queriesCompleted + 1}/10`;
+                progressTracker.innerHTML = `Progress: <strong>Question <span id="progressText">${queriesCompleted + 1}/10</span></strong>`;
+            }
+        }
+
+        if (isProfessionalCaregiver) {
+            document.getElementById("answerStyleGroup").style.display = "block";
+        }
+
+        function getRatingOptions() {
+            return `
+                <option value="0">--</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            `;
+        }
+
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            // Disable input and search button
+            input.disabled = true;
+            form.querySelector("button[type='submit']").disabled = true;
+            const selectedAnswerStyle = document.querySelector('input[name="answerStyle"]:checked')?.value || userRole;
+            const query = input.value;
+            answerText.innerText = "Thinking...";
+            sourcesList.innerHTML = "";
+            resultsBox.style.display = "block";
+            sourcesBox.style.display = "none";
+            
+            const res = await fetch("/stream", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    user_id: userId,
+                    query,
+                    answer_style: selectedAnswerStyle
+                })
+            });
+            
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+            let fullAnswer = "";
+            let sourcesJson = "";
+            
+            while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
+                const chunk = decoder.decode(value || new Uint8Array());
+                
+                if (!receivedFirstChunk && chunk.trim() !== "") {
+                    // First meaningful content received, clear "Thinking..."
+                    answerText.innerHTML = "";
+                    receivedFirstChunk = true;
+                }
+
+                if (chunk.includes("<<SOURCES>>")) {
+                    const [answerPart, sourcePart] = chunk.split("<<SOURCES>>");
+                    fullAnswer += answerPart;
+                    answerText.innerHTML = marked.parse(fullAnswer);
+            
+                    // Read remaining JSON (may span multiple reads)
+                    sourcesJson = chunk.substring(chunk.indexOf("<<SOURCES>>") + 11);
+                    while (!doneReading) {
+                        const { value: moreValue, done: moreDone } = await reader.read();
+                        sourcesJson += decoder.decode(moreValue || new Uint8Array());
+                        if (moreDone) break;
+                    }
+            
+                    done = true;
+                    break;
+                } else {
+                    fullAnswer += chunk;
+                    answerText.innerHTML = marked.parse(fullAnswer);
+                }
+            }
+            
+            answerRatingWrapper.innerHTML = "";
+
+            if (isProfessionalCaregiver) {
+                answerRatingWrapper.innerHTML = `
+                    <label>Rate Relevance:</label><select id="rateRelevance">${getRatingOptions()}</select><br>
+                    <label>Rate Clarity:</label><select id="rateClarity">${getRatingOptions()}</select><br>
+                    <label>Rate Empathy:</label><select id="rateEmpathy">${getRatingOptions()}</select><br>
+                    <label>Rate Actionability:</label><select id="rateActionability">${getRatingOptions()}</select><br><br>
+
+                    <label>Does the answer include misleading or dangerous information?</label>
+                    <select id="misinfo">
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                    </select>
+                    <textarea id="misinfoText" style="display:none;" placeholder="Please explain..." rows="2" style="width:100%"></textarea><br>
+
+                    <label>Does the answer include demographically biased information?</label>
+                    <select id="bias">
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                    </select>
+                    <textarea id="biasText" style="display:none;" placeholder="Please explain..." rows="2" style="width:100%"></textarea>
+                `;
+
+                // Show free-text areas conditionally
+                document.getElementById("misinfo").addEventListener("change", (e) => {
+                    document.getElementById("misinfoText").style.display = e.target.value === "yes" ? "block" : "none";
+                });
+                document.getElementById("bias").addEventListener("change", (e) => {
+                    document.getElementById("biasText").style.display = e.target.value === "yes" ? "block" : "none";
+                });
+            } else {
+                answerRatingWrapper.innerHTML = `
+                    <label for="answerRating">Rate this answer (1–5):</label>
+                    <select id="answerRating">${getRatingOptions()}</select>
+                `;
+            }
+
+            answerRatingWrapper.style.display = "block";
+
+            document.getElementById("nextBtn").style.display = "inline-block";
+            
+            // Parse and display sources
+            if (sourcesJson) {
+                const sources = JSON.parse(sourcesJson);
+                sourcesBox.style.display = "block";
+                sources.forEach((src, index) => {
+                    const div = document.createElement("div");
+                    div.className = "source-item";
+                    // Store source URL as data attribute
+                    div.setAttribute("data-source", src.url || "Unavailable");
+            
+                    let linkText;
+                    if (src.source === "pdf" || src.source === "docx") {
+                        linkText = src.url.split("/").pop();
+                    } else {
+                        linkText = src.url;
+                    }
+            
+                    const link = src.url && src.url !== "Unavailable"
+                        ? `<a href="${src.url}" target="_blank">${linkText}</a>`
+                        : `<span style="color:gray;">Unavailable</span>`;
+            
+                    div.innerHTML = `
+                        <strong>[${index + 1}] ${src.title}</strong> (${src.source})<br>
+                        ${link}<br>
+                        <em>${src.snippet}...</em><br>
+                        ${isProfessionalCaregiver ? `
+                            <label>Rate this source (1–5):</label>
+                            <select class="sourceRating">
+                                <option value="0">--</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>` : ""}
+                    `;
+
+
+                    sourcesList.appendChild(div);
+                });
+            }            
+        });
+
+        function collectRatings() {
+            let selectedAnswerStyle;
+            let answer_rating;
+            let ratings;
+
+            if (isProfessionalCaregiver) {
+                selectedAnswerStyle = document.querySelector('input[name="answerStyle"]:checked')?.value || userRole;
+                answer_rating = {
+                    relevance: document.getElementById("rateRelevance").value,
+                    clarity: document.getElementById("rateClarity").value,
+                    empathy: document.getElementById("rateEmpathy").value,
+                    actionability: document.getElementById("rateActionability").value,
+                    misinformation: {
+                        flagged: document.getElementById("misinfo").value,
+                        explanation: document.getElementById("misinfoText").value
+                    },
+                    bias: {
+                        flagged: document.getElementById("bias").value,
+                        explanation: document.getElementById("biasText").value
+                    }
+                };
+                ratings = {
+                    sources: Array.from(document.getElementsByClassName("source-item")).map((div) => {
+                        return {
+                            title: div.querySelector("strong").innerText,
+                            source: div.getAttribute("data-source"),
+                            rating: div.querySelector(".sourceRating").value || "0"
+                        };
+                    })
+                };
+            } else {
+                answer_rating = document.getElementById("answerRating").value;
+                selectedAnswerStyle = "";
+                ratings = "";
+            }
+            return {selectedAnswerStyle, answer_rating, ratings };
+        }
+
+        document.getElementById("nextBtn").addEventListener("click", async () => {
+            const { selectedAnswerStyle, answer_rating, ratings } = collectRatings();
+            
+            const response = await fetch("/rate_and_next", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    user_id: userId,
+                    query: input.value,
+                    answer_style: selectedAnswerStyle,
+                    answer: answerText.innerText,
+                    answer_rating: answer_rating,
+                    ratings: ratings
+                })
+            });
+            
+            const data = await response.json();
+            queriesCompleted = data.queries_completed || 0;
+            updateProgress();
+
+            // Check if completed all 10 queries
+            if (queriesCompleted >= 10) {
+                // Hide everything and show completion page with SUS
+                form.style.display = "none";
+                document.getElementById("progressTracker").style.display = "none";
+                document.getElementById("languageSelect").parentElement.style.display = "none";
+                document.getElementById("answerRatingWrapper").style.display = "none";
+                document.getElementById("nextBtn").style.display = "none";
+                document.getElementById("buttonGroup").style.display = "none";
+                resultsBox.style.display = "none";
+                sourcesBox.style.display = "none";
+                document.getElementById("completionPage").style.display = "block";
+                
+                // Initialize SUS questionnaire
+                initializeSUS();
+            } else {
+                // Reset form for next question
+                input.value = "";
+                document.getElementById("answerRatingWrapper").style.display = "none";
+                document.getElementById("nextBtn").style.display = "none";
+                resultsBox.style.display = "none";
+                sourcesBox.style.display = "none";
+                answerText.innerHTML = "";
+                sourcesList.innerHTML = "";
+                receivedFirstChunk = false;
+                input.disabled = false;
+                form.querySelector("button[type='submit']").disabled = false;
+            }
+        });
+
+        // Finish button on completion page
+        document.getElementById("finishBtnCompletion").addEventListener("click", async () => {
+            // Save SUS responses before redirecting
+            try {
+                const response = await fetch("/save_sus", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        sus_responses: susResponses
+                    })
+                });
+                
+                const data = await response.json();
+                console.log("SUS score:", data.sus_score);
+            } catch (error) {
+                console.error("Error saving SUS responses:", error);
+            }
+            
+            // Redirect to Prolific completion page
+            window.location.href = "https://app.prolific.com/submissions/complete?cc=C6XM6223";
+        });
+
+        // Handle language changes Temporary, should be removed in next Phase
+        document.getElementById("languageSelect").addEventListener("change", async (e) => {
+            const selectedLanguage = e.target.value;
+            
+            // Update user language in database
+            await fetch("/update_language", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    user_id: userId,
+                    language: selectedLanguage
+                })
+            });
+            
+            console.log(`Language updated to: ${selectedLanguage}`);
+        });
+
+        // Load current user language on page load
+        async function loadUserLanguage() {
+            try {
+                const response = await fetch(`/get_user_info?user_id=${userId}`);
+                const userInfo = await response.json();
+                if (userInfo.language) {
+                    document.getElementById("languageSelect").value = userInfo.language;
+                }
+            } catch (error) {
+                console.log("Could not load user language preference");
+            }
+        }
+        
+        // Initialize language selection and progress
+        loadUserLanguage();
+        loadProgress();
+        // Temporary ends
+
+    </script>
+</body>
+</html>

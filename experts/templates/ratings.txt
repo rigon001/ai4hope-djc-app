@@ -1,0 +1,42 @@
+if (userRole === "Patient") 
+"rating1":Did the answer give you the information you were looking for?
+1 - Not at all
+2 - A little
+3 - Somewhat
+4 - Mostly
+5 - Completely
+"rating2":Did using this system make you feel happy or comfortable?
+1 - Not at all
+2 - A little
+3 - Somewhat
+4 - Mostly
+5 - Completely
+
+"rating3":Did you understand the answers?
+1 - Not at all
+2 - A little
+3 - Somewhat
+4 - Mostly
+5 - Completely
+"freeText":Please tell us more about your answer, or share anything that was confusing or especially clear:
+
+else if (userRole === "Family caregiver")                               
+"rating1":Did the answer give you the information or support you needed as a caregiver?
+    1 - Not at all
+    2 - A little
+    3 - Somewhat
+    4 - Mostly
+    5 - Completely
+"rating2":Did using this system make you feel supported or more at ease?
+    1 - Not at all
+    2 - A little
+    3 - Somewhat
+    4 - Mostly
+    5 - Completely
+"rating3":Was the information or answer easy for you to understand?  
+    1 - Not at all
+    2 - A little
+    3 - Somewhat
+    4 - Mostly
+    5 - Completely
+"freeText":Please tell us more about your answer, or share anything that was confusing or especially clear: 

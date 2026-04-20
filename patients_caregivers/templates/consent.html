@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AI4HOPE | Educational Chatbot Training</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f6f6f6; display: flex; justify-content: center; }
+    .card { background: white; padding: 24px; border-radius: 8px; margin-top: 60px; max-width: 720px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+    h1 { margin-top: 0; }
+    .actions { margin-top: 20px; display: flex; gap: 12px; }
+    button { padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; }
+    .agree { background: #2e7d32; color: #fff; }
+    .agree:disabled { background: #c8e6c9; cursor: not-allowed; }
+    .decline { background: #9e9e9e; color: #fff; }
+    .small { color: #666; font-size: 13px; }
+    .error { color: #c62828; font-size: 14px; margin-top: 8px; display: none; }
+    .role-selection { margin: 20px 0; padding: 16px; background: #e3f2fd; border-radius: 6px; }
+    .role-selection h3 { margin-top: 0; color: #1565c0; }
+    .role-option { margin: 8px 0; }
+    .role-option input[type="radio"] { margin-right: 8px; }
+    .consent-content { display: none; margin-top: 20px; }
+    .consent-content.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>AI4HOPE | Educational Chatbot Training</h1>
+    
+    <div class="role-selection">
+      <h3>Please select your role:</h3>
+      <div class="role-option">
+        <label>
+          <input type="radio" name="user_role" value="Patient" id="rolePatient" />
+          <strong>I am a Patient</strong> (living with dementia)
+        </label>
+      </div>
+      <div class="role-option">
+        <label>
+          <input type="radio" name="user_role" value="Family caregiver" id="roleCaregiver" />
+          <strong>I am a Family Caregiver</strong> (supporting someone with dementia)
+        </label>
+      </div>
+    </div>
+
+    <!-- Patient Consent Content -->
+    <div id="patientConsent" class="consent-content">
+      <h2>About this Study</h2>
+      <p>You are invited to help us test an educational chatbot that provides information about dementia and palliative care. This chatbot is designed to answer questions and provide support to people living with dementia and their caregivers.</p>
+      
+      <h2>What Will Happen</h2>
+      <p>If you agree to take part, you will:</p>
+      <ul>
+        <li>Use the chatbot to ask questions about dementia and palliative care</li>
+        <li>Rate how helpful the answers are</li>
+        <li>Share your thoughts about using the chatbot</li>
+        <li>Answer a few questions about yourself (such as your age and country)</li>
+      </ul>
+      <p>This will take about 1–2 hours of your time.</p>
+      
+      <h2>Your Privacy</h2>
+      <p>We will keep your information private and safe. Your name will not be used in any reports. Only the research team will see your information, and it will be stored securely. The data is protected according to the policies of University of Maribor: <a href="https://www.um.si/en/o-univerzi-en/document-center/protection-of-personal-data/" target="_blank">https://www.um.si/en/o-univerzi-en/document-center/protection-of-personal-data/</a></p>
+      
+      <h2>You Can Choose</h2>
+      <p>Taking part in this study is your choice. You can stop at any time, and you do not need to give a reason. This will not affect any care or support you receive.</p>
+      
+      <h2>Contact Us</h2>
+      <p>If you have questions, please contact dr. Izidor Mlakar at <a href="mailto:izidor.mlakar@um.si">izidor.mlakar@um.si</a> or the privacy officer at <a href="mailto:dpo@um.si">dpo@um.si</a>.</p>
+      
+      <p><strong>Thank you for considering taking part in our study. Your help is very important to us.</strong></p>
+    </div>
+
+    <!-- Family Caregiver Consent Content -->
+    <div id="caregiverConsent" class="consent-content">
+      <h2>Introduction</h2>
+      <p>You are invited to participate in a research study that aims to develop and validate an AI-powered, personalized education module for dementia and palliative care. Your input as a family caregiver is essential to ensure the educational content is relevant, supportive, and appropriate for caregivers' needs.</p>
+      
+      <h2>Purpose of the Study</h2>
+      <p>The goal of this study is to create a trustworthy, adaptive educational module for people living with dementia and their caregivers. We seek your input to evaluate and improve the quality of AI-generated responses, ensuring the system meets high standards of accuracy, empathy, and ethical compliance.</p>
+      
+      <h2>What Does Participation Involve?</h2>
+      <ul>
+        <li>Review and rate AI-generated responses to dementia and palliative care queries for relevance, clarity, empathy, and usefulness</li>
+        <li>Assess the trustworthiness of cited sources</li>
+        <li>Identify any concerns about the information provided</li>
+        <li>Provide feedback on the usability of the educational module</li>
+        <li>Complete a brief demographic questionnaire at the start of your participation</li>
+      </ul>
+      <p>Your participation will involve evaluating approximately 15–20 queries. The estimated time commitment is 1–2 hours.</p>
+      
+      <h2>Confidentiality and Data Protection</h2>
+      <p>Your privacy and the protection of your personal data are of utmost importance. The research team handles all information in accordance with the General Data Protection Regulation (GDPR). The data is protected according to the internal policies of University of Maribor: <a href="https://www.um.si/en/o-univerzi-en/document-center/protection-of-personal-data/" target="_blank">https://www.um.si/en/o-univerzi-en/document-center/protection-of-personal-data/</a></p>
+      <ul>
+        <li><b>Types of Data Collected:</b> We will collect demographic data and your evaluations of AI-generated responses. No unnecessary personal data will be collected.</li>
+        <li><b>Purpose of Data Use:</b> All data will be used exclusively for research purposes to evaluate and improve the AI-powered education module.</li>
+        <li><b>Data Processing:</b> Your data will be processed in a secure environment at University of Maribor. Only authorized research team members will have access to it. Data will be anonymized to protect your identity.</li>
+        <li><b>Data Storage:</b> All digital data will be stored on encrypted servers with strict access controls and will be retained for at most 5 years after the study ends.</li>
+        <li><b>Data Sharing:</b> Data will not be shared with third parties except as required by law, and only anonymized or aggregated data will be used in scientific publications.</li>
+      </ul>
+      
+      <h2>Voluntary Participation</h2>
+      <p>Your participation is entirely voluntary. You may withdraw at any time without providing a reason, and this will not affect any care or support you or your family member receives.</p>
+      
+      <h2>Risks and Benefits</h2>
+      <p>There are no anticipated risks from participating in this study. Your contribution will help improve educational resources for dementia caregivers and may benefit other caregivers in the future.</p>
+      
+      <h2>Contact Information</h2>
+      <p>For any questions regarding confidentiality or data protection, please contact the principal investigator, dr. Izidor Mlakar, <a href="mailto:izidor.mlakar@um.si">izidor.mlakar@um.si</a> or the institutional privacy officer, assoc. prof. dr. Miha Dvojmoč, <a href="mailto:dpo@um.si">dpo@um.si</a>.</p>
+    </div>
+
+    <!-- Consent Form (shown after role selection) -->
+    <form method="POST" action="/consent" id="consentForm" style="display: none;">
+      <h2>Consent Statement</h2>
+      <p>By participating, you acknowledge that you have read and understood the information above and agree to take part in this study.</p>
+      <p><b>Please tick or ask someone to help you tick each box:</b></p>
+      <label><input type="checkbox" id="readBox" name="readBox" /> I have read or had this information read to me, and I understand it</label><br>
+      <label><input type="checkbox" id="understandBox" name="understandBox" /> I understand that my participation is voluntary and I can withdraw at any time</label><br>
+      <label><input type="checkbox" id="dataBox" name="dataBox" /> I agree to the secure handling of my data as described above</label><br>
+      <label><input type="checkbox" id="agreeBox" name="agreeBox" /> I agree to take part in this study</label>
+      <p id="errorMsg" class="error" role="alert" aria-live="polite"></p>
+      <input type="hidden" name="decision" value="agree" />
+      <input type="hidden" name="selected_role" id="selectedRole" value="" />
+      <div class="actions">
+        <button class="agree" type="submit" id="submitBtn" disabled>Submit</button>
+      </div>
+    </form>
+
+    <p style="margin-top: 30px;">Funded by the European Union (AI4HOPE, 101136769). Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the Health and Digital Executive Agency. Neither the European Union nor the granting authority can be held responsible for them.</p>
+    <p>This work was funded by UK Research and Innovation (UKRI) under the UK government's Horizon Europe funding guarantee [Grant No. 101136769].</p>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('consentForm');
+      const rolePatient = document.getElementById('rolePatient');
+      const roleCaregiver = document.getElementById('roleCaregiver');
+      const patientConsent = document.getElementById('patientConsent');
+      const caregiverConsent = document.getElementById('caregiverConsent');
+      const selectedRoleInput = document.getElementById('selectedRole');
+      const readBox = document.getElementById('readBox');
+      const understandBox = document.getElementById('understandBox');
+      const dataBox = document.getElementById('dataBox');
+      const agreeBox = document.getElementById('agreeBox');
+      const submitBtn = document.getElementById('submitBtn');
+      const errorMsg = document.getElementById('errorMsg');
+
+      function clearError() {
+        errorMsg.textContent = '';
+        errorMsg.style.display = 'none';
+      }
+
+      function showError(msg) {
+        errorMsg.textContent = msg;
+        errorMsg.style.display = 'block';
+        errorMsg.focus && errorMsg.focus();
+      }
+
+      function updateConsentDisplay() {
+        const selectedRole = document.querySelector('input[name="user_role"]:checked');
+        if (selectedRole) {
+          const role = selectedRole.value;
+          selectedRoleInput.value = role;
+          
+          // Show appropriate consent content
+          if (role === 'Patient') {
+            patientConsent.classList.add('active');
+            caregiverConsent.classList.remove('active');
+          } else {
+            caregiverConsent.classList.add('active');
+            patientConsent.classList.remove('active');
+          }
+          
+          // Show the form
+          form.style.display = 'block';
+          
+          // Scroll to consent content
+          setTimeout(() => {
+            document.querySelector('.consent-content.active').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 100);
+        } else {
+          patientConsent.classList.remove('active');
+          caregiverConsent.classList.remove('active');
+          form.style.display = 'none';
+        }
+        validateForm();
+      }
+
+      function validateForm() {
+        const roleSelected = document.querySelector('input[name="user_role"]:checked');
+        const allChecked = readBox.checked && understandBox.checked && dataBox.checked && agreeBox.checked;
+        submitBtn.disabled = !(roleSelected && allChecked);
+      }
+
+      rolePatient.addEventListener('change', updateConsentDisplay);
+      roleCaregiver.addEventListener('change', updateConsentDisplay);
+      readBox.addEventListener('change', () => { clearError(); validateForm(); });
+      understandBox.addEventListener('change', () => { clearError(); validateForm(); });
+      dataBox.addEventListener('change', () => { clearError(); validateForm(); });
+      agreeBox.addEventListener('change', () => { clearError(); validateForm(); });
+
+      form.addEventListener('submit', function(e) {
+        const roleSelected = document.querySelector('input[name="user_role"]:checked');
+        const allChecked = readBox.checked && understandBox.checked && dataBox.checked && agreeBox.checked;
+        
+        if (!roleSelected) {
+          e.preventDefault();
+          showError('Please select your role.');
+        } else if (!allChecked) {
+          e.preventDefault();
+          showError('In order to proceed you need to check all boxes.');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

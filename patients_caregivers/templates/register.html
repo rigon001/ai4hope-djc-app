@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to DJC Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f8f8;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        label {
+            font-weight: bold;
+        }
+        select, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4285f4;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .hidden {
+            display: none;
+        }
+
+        select[multiple] {
+            height: auto;
+            min-height: 100px;
+        }
+
+    </style>
+</head>
+<body>
+    <h2>Tell us a bit about yourself</h2>
+    <form method="POST" action="/register">
+
+        <label for="user_id">Prolific ID:</label>
+        <input type="text" name="user_id" placeholder="Enter your Prolific ID">
+
+        <label for="age_group">Age Group:</label>
+        <select name="age_group" required>
+            <option value="">Select</option>
+            <option>18–39</option>
+            <option>40–49</option>
+            <option>50–59</option>
+            <option>60–69</option>
+            <option>70–79</option>
+            <option>80 and above</option>
+            <option>Prefer not to say</option>
+        </select>
+
+        <label for="gender">Gender:</label>
+        <select name="gender" required>
+            <option value="">Select</option>
+            <option>Female</option>
+            <option>Male</option>
+            <option>Non-binary</option>
+            <option>Prefer not to say</option>
+        </select>
+
+        <label for="relationship">User Role:</label>
+        <select name="relationship" id="relationship" required onchange="toggleStageField()">
+            <option value="">Select your role</option>
+            <option value="Patient">Patient</option>
+            <option value="Family caregiver">Family caregiver</option>
+        </select>
+
+        <div id="stage-field" class="hidden">
+            <label id="stage-label">What stage(s) of dementia or palliative care are you most involved with? (If you are not involved with dementia or palliative care, please leave blank)</label><br>
+            <label><input type="checkbox" name="stage" value="Early stage"> Early stage</label><br>
+            <label><input type="checkbox" name="stage" value="Middle stage"> Middle stage</label><br>
+            <label><input type="checkbox" name="stage" value="Late stage"> Late stage</label><br>
+            <label><input type="checkbox" name="stage" value="Prefer not to say"> Prefer not to say / Not applicable</label>
+        </div>
+
+        <div id="diagnosis-field" class="hidden">
+            <label for="diagnosis" id="diagnosis-label">Primary Diagnosis:</label>
+            <select name="diagnosis" id="diagnosis", onchange="toggleDiagnosisOther()">
+                <option value="">Select</option>
+                <option>Alzheimer’s disease</option>
+                <option>Vascular dementia</option>
+                <option>Lewy body dementia</option>
+                <option>Other</option>
+                <option>Not sure</option>
+                <option>Prefer not to say</option>
+            </select>
+        </div>
+
+        <div id="other-diagnosis" class="hidden">
+            <label for="diagnosis_other">Please specify:</label>
+            <input type="text" name="diagnosis_other">
+        </div>
+
+
+        <div id="language-field">
+            <label for="language">Preferred Language:</label>
+            <select name="language" required>
+                <option value="">Select</option>
+                <option value="en">English</option>
+                <option value="de">German</option>
+                <option value="sl">Slovenian</option>
+                <option value="es">Spanish</option>
+                <option value="pt">Portuguese</option>
+            </select>
+        </div>
+
+        <div id="pilot-site-field" class="hidden">
+            <label for="pilot_site">Pilot Site: (Optional)</label>
+            <select name="pilot_site" id="pilot_site">
+                <option value="">All sites (no filter)</option>
+                <option value="INTRAS">INTRAS (Spain)</option>
+                <option value="UCC">UCC (Ireland)</option>
+                <option value="UKB">UKB (Germany)</option>
+                <option value="UKCM">UKCM (Slovenia)</option>
+                <option value="UP">UP (Portugal)</option>
+                <option value="UoL">UoL (UK)</option>
+            </select>
+        </div>
+        
+
+        <div id="device-field" class="hidden">
+            <label>Device most often used:</label><br>
+            <label><input type="checkbox" name="device" value="Smartphone" onchange="toggleDeviceOther()"> Smartphone</label><br>
+            <label><input type="checkbox" name="device" value="Tablet" onchange="toggleDeviceOther()"> Tablet</label><br>
+            <label><input type="checkbox" name="device" value="Computer" onchange="toggleDeviceOther()"> Computer</label><br>
+            <label><input type="checkbox" name="device" value="Other" onchange="toggleDeviceOther()"> Other</label>
+        </div>
+
+        <div id="other-device" class="hidden">
+            <label for="device_other">Please specify:</label>
+            <input type="text" name="device_other">
+        </div>
+
+        <div id="tech-comfort-field" class="hidden">
+            <label for="tech_comfort">How comfortable are you with learning and adopting new digital health technologies?</label>
+            <select name="tech_comfort">
+                <option value="">Select</option>
+                <option>Very comfortable</option>
+                <option>Somewhat comfortable</option>
+                <option>Need assistance</option>
+                <option>Not comfortable</option>
+                <option>Prefer not use new tools</option>
+            </select>
+        </div>
+
+        <div id="tech-savviness-field" class="hidden">
+            <label for="tech_savviness">How would you rate your overall technological savviness?</label>
+            <select name="tech_savviness">
+                <option value="">Select</option>
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+            </select>
+        </div>
+        
+        <div id="care_setting-field" class="hidden">
+            <label for="care_setting">Living/Care Setting:</label>
+            <select name="care_setting">
+                <option value="">Select</option>
+                <option>Home</option>
+                <option>Assisted living</option>
+                <option>Nursing home</option>
+                <option>Hospice</option>
+                <option>Hospital</option>
+            </select>
+        </div>
+        
+        
+
+        <div id="has_support-field" class="hidden">
+            <label for="has_support">Do you have regular support from family, friends, or professionals?</label>
+            <select name="has_support">
+                <option value="">Select</option>
+                <option>Yes</option>
+                <option>No</option>
+                <option>Prefer not to say</option>
+            </select>
+        </div>
+        
+
+        <div id="experience-field" class="hidden">
+            <label for="experience">Years of Experience:</label>
+            <input name="experience" type="number" min="0">
+        </div>
+
+        <button type="submit">Start</button>
+    </form>
+
+    <script>
+        function getCheckedValues(name) {
+            return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
+                        .map(el => el.value);
+        }
+
+        function toggleStageField() {
+            const relationship = document.getElementById("relationship").value;
+            const stageField = document.getElementById("stage-field");
+            const deviceField = document.getElementById("device-field");
+            const techComfortField = document.getElementById("tech-comfort-field");
+            const techSavvinessField = document.getElementById("tech-savviness-field");
+            const hasSupportField = document.getElementById("has_support-field");
+            const diagnosisField = document.getElementById("diagnosis-field");
+            const diagnosisLabel = document.getElementById("diagnosis-label");
+            const experienceField = document.getElementById("experience-field");
+            const languageField = document.getElementById("language-field");
+
+            const pilotSiteField = document.getElementById("pilot-site-field");
+            
+            // Show stage select with adapted label
+            if (relationship === "Professional caregiver") {
+                stageField.classList.remove("hidden");
+                deviceField.classList.remove("hidden");
+                techComfortField.classList.remove("hidden");
+                techSavvinessField.classList.remove("hidden");
+                experienceField.classList.remove("hidden");
+                languageField.classList.remove("hidden");
+                //pilotSiteField.classList.remove("hidden");
+                diagnosisField.classList.add("hidden");
+                hasSupportField.classList.add("hidden");
+            } else if (relationship === "Family caregiver"){
+                deviceField.classList.remove("hidden");
+                techComfortField.classList.remove("hidden");
+                techSavvinessField.classList.remove("hidden");
+                hasSupportField.classList.remove("hidden");
+                diagnosisField.classList.remove("hidden");
+                diagnosisLabel.innerText = "Primary Diagnosis of the Family member you take care of:";
+                languageField.classList.remove("hidden");
+                //pilotSiteField.classList.remove("hidden");
+                experienceField.classList.add("hidden");
+                stageField.classList.add("hidden");
+            } else if (relationship === "Patient"){
+                techComfortField.classList.remove("hidden");
+                techSavvinessField.classList.remove("hidden");
+                hasSupportField.classList.remove("hidden");
+                diagnosisField.classList.remove("hidden");
+                diagnosisLabel.innerText = "Primary Diagnosis:";
+                experienceField.classList.add("hidden");
+                languageField.classList.remove("hidden");
+                //pilotSiteField.classList.remove("hidden");
+                stageField.classList.add("hidden");
+                deviceField.classList.add("hidden");
+            }
+        }
+
+        function toggleDeviceOther() {
+            const otherDevice = document.getElementById("other-device");
+            const selectedOptions = getCheckedValues("device");
+            
+            if (selectedOptions.includes("Other")) {
+                otherDevice.classList.remove("hidden");
+            } else {
+                otherDevice.classList.add("hidden");
+            }
+        }
+
+        function toggleDiagnosisOther() {
+            const diagnosis = document.getElementById("diagnosis").value;
+            const otherDiagnosis = document.getElementById("other-diagnosis");
+
+            if (diagnosis === "Other") {
+                otherDiagnosis.classList.remove("hidden");
+            } else {
+                otherDiagnosis.classList.add("hidden");
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Pre-fill role from consent page if available
+            const selectedRole = "{{ selected_role }}";
+            if (selectedRole) {
+                const roleSelect = document.getElementById('relationship');
+                roleSelect.value = selectedRole;
+                // Trigger change event to show/hide appropriate fields
+                toggleStageField();
+            }
+        });
+
+    
+    </script>
+</body>
+</html>
