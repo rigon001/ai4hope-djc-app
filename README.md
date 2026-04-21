@@ -52,6 +52,7 @@ Keeping separate folders preserves protocol fidelity for publication and review,
 
 - GitHub: code, configs, and scripts in this repository.
 - Zenodo: frozen `index/` artifacts and other heavy reproducibility assets.
+- Huggingface: [https://huggingface.co/datasets/HUMADEX/dementia_education_chatbot_sources](https://huggingface.co/datasets/HUMADEX/dementia_education_chatbot_sources)
 
 ## Using the Repository
 
