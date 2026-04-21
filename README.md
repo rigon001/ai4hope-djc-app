@@ -1,4 +1,4 @@
-# Dementia Companion
+# Dementia Education Chatbot
 
 This repository contains the public GitHub release for the Dementia Companion project, a multilingual retrieval-augmented generation (RAG) system built to support dementia care information for two related but distinct studies.
 
