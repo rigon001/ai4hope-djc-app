@@ -48,11 +48,10 @@ Keeping separate folders preserves protocol fidelity for publication and review,
 - LlamaIndex stack for retrieval and indexing
 - Local or hosted model endpoints configured through environment variables
 
-## Publication Split
+## Related Repos
 
-- GitHub: code, configs, and scripts in this repository.
-- Zenodo: frozen `index/` artifacts and other heavy reproducibility assets.
-- Huggingface: [https://huggingface.co/datasets/HUMADEX/dementia_education_chatbot_sources](https://huggingface.co/datasets/HUMADEX/dementia_education_chatbot_sources)
+- [Zenodo](https://doi.org/10.5281/zenodo.19676175)
+- [HuggingFace](https://huggingface.co/datasets/HUMADEX/dementia_education_chatbot_sources)
 
 ## Using the Repository
 
